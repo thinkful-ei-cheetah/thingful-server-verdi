@@ -91,7 +91,7 @@ describe('Things Endpoints', function() {
     context('Given no things', () => {
       const testUsers =  helpers.makeUsersArray();
       beforeEach('insert things', () =>
-        db('thingful_users').insert(testUsers)
+        helpers.seedUsers(db, testUsers)
       );
 
       it('responds with 404', () => {
@@ -160,7 +160,7 @@ describe('Things Endpoints', function() {
     context('Given no things', () => {
       const testUsers =  helpers.makeUsersArray();
       beforeEach('insert things', () =>
-        db('thingful_users').insert(testUsers)
+        helpers.seedUsers(db, testUsers)
       );
 
       it('responds with 404', () => {

@@ -1,5 +1,5 @@
 'use strict';
-
+const bcrypt = require('bcryptjs');
 const AuthService = require('../auth/auth-service');
 
 const requireAuth = async (req, res, next) => {
@@ -20,9 +20,15 @@ const requireAuth = async (req, res, next) => {
 
   try {
     const user = await AuthService.findByUsername(req.app.get('db'), user_name);
-    if (!user || password !== user.password) {
+    if (!user) {
       return res.status(401).json({ error: 'Unauthorized request' });
     }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Unauthorized request' });
+    }
+
     req.user = user;
     next();
   } catch(err) {
