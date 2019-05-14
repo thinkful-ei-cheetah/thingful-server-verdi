@@ -25,7 +25,7 @@ describe('Protected Endpoints', function() {
   before('cleanup', () => helpers.cleanTables(db));
   afterEach('cleanup', () => helpers.cleanTables(db));
 
-  beforeEach('insert articles', () =>
+  beforeEach('insert things', () =>
     helpers.seedThingsTables(
       db,
       testUsers,
@@ -49,29 +49,21 @@ describe('Protected Endpoints', function() {
 
   protectedEndpoints.forEach(endpoint => {
     describe(endpoint.name, () => {
-      it('returns 401 "Missing basic token" if no token provided', () => {
+      it('returns 401 "Missing bearer token" if no token provided', () => {
         return endpoint.method(endpoint.path)
-          .expect(401, {error: 'Missing basic token'});
+          .expect(401, {error: 'Missing bearer token'});
       });
 
-      it('returns 401 "Unauthorized request" when no credentials provided', () => {
-        const noCreds = {user_name: '', password: ''};
+      it('returns 401 "Unauthorized request" when invalid JWT secret', () => {
         return endpoint.method(endpoint.path)
-          .set('Authorization', helpers.makeAuthHeader(noCreds))
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0], 'badSecret'))
           .expect(401, { error: 'Unauthorized request' });
       });
 
-      it('returns 401 "Unauthorized request" if invalid user', () => {
-        const nonExistentUser = {user_name: 'FooBarMagic', password: 'password'};
+      it('returns 401 "Unauthorized request" when invalid username', () => {
+        const invalidUser = { user_name: 'user-not-existy', id: 1 };
         return endpoint.method(endpoint.path)
-          .set('Authorization', helpers.makeAuthHeader(nonExistentUser))
-          .expect(401, { error: 'Unauthorized request' });
-      });
-
-      it('returns 401 "Unauthorized request" if invalid password', () => {
-        const userWithWrongPassword = {user_name: testUsers[0].user_name, password: 'fake'};
-        return endpoint.method(endpoint.path)
-          .set('Authorization', helpers.makeAuthHeader(userWithWrongPassword))
+          .set('Authorization', helpers.makeAuthHeader(invalidUser))
           .expect(401, { error: 'Unauthorized request' });
       });
     });
