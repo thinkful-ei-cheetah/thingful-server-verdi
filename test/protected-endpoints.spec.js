@@ -3,6 +3,7 @@
 const knex = require('knex');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
+const tk = require('timekeeper');
 
 describe('Protected Endpoints', function() {
   let db;
@@ -65,6 +66,20 @@ describe('Protected Endpoints', function() {
         return endpoint.method(endpoint.path)
           .set('Authorization', helpers.makeAuthHeader(invalidUser))
           .expect(401, { error: 'Unauthorized request' });
+      });
+
+      it('returns 401 "Session expired, please log back in" when expired JWT', () => {
+        const args = [testUsers[0], process.env.JWT_SECRET, '1s'];
+        const token = helpers.makeAuthHeader(...args);
+        const future = new Date(Date.now() + 1000);
+        tk.travel(future);
+        
+        return endpoint.method(endpoint.path)
+          .set('Authorization', token)
+          .expect(401, { error: 'Session expired, please log back in' })
+          .then(() => {
+            tk.reset();
+          });
       });
     });
   });

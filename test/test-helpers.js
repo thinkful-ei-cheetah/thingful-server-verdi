@@ -271,9 +271,10 @@ function seedMaliciousThing(db, user, thing) {
     );
 }
 
-function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
+function makeAuthHeader(user, secret = process.env.JWT_SECRET, expiry = process.env.JWT_EXPIRY) {
   const token = jwt.sign({ user_id: user.id }, secret, {
     subject: user.user_name,
+    expiresIn: expiry,
     algorithm: 'HS256',
   });
   return `Bearer ${token}`;

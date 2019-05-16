@@ -22,7 +22,10 @@ const requireAuth = async (req, res, next) => {
     req.user = user;
     next();
   } catch(err) {
-    res.status(401).json({ error: 'Unauthorized request' });
+    const msg = err.message === 'jwt expired' ?
+      'Session expired, please log back in' :
+      'Unauthorized request';
+    res.status(401).json({ error:  msg});
   }
 };
 
