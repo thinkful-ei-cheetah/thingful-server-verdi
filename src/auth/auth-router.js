@@ -46,4 +46,32 @@ authRouter
     
   });
 
+authRouter
+  .route('/login/google')
+  .post(bodyParser, async (req, res, next) => {
+    const {id_token} = req.body;
+    
+    try {
+      const verifiedToken = await AuthService.verifyGoogleToken(id_token);
+
+      if (!verifiedToken.name) {
+        res.status(400).json({error: 'invalid id_token'});
+      }
+
+      const user = await AuthService.findByUsername(req.app.get('db'), verifiedToken.name);
+
+      if (!user) {
+        res.status(400).json({error: 'User does not exist, register an account first'});
+      }
+
+      const sub = user.user_name;
+      const payload = { user_id: user.id };
+      res.send({
+        authToken: AuthService.createJwt(sub, payload),
+      });
+    } catch(err) {
+      next(err);
+    }
+  });
+
 module.exports = authRouter;
