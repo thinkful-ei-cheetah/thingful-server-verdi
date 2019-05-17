@@ -74,4 +74,26 @@ authRouter
     }
   });
 
+authRouter
+  .route('/login/facebook')
+  .post(bodyParser, async (req, res, next) => {
+    const {name} = req.body;
+    
+    try {
+      const user = await AuthService.findByUsername(req.app.get('db'), name.toLowerCase());
+
+      if (!user) {
+        res.status(400).json({error: 'User does not exist, register an account first'});
+      }
+
+      const sub = user.user_name;
+      const payload = { user_id: user.id };
+      res.send({
+        authToken: AuthService.createJwt(sub, payload),
+      });
+    } catch(err) {
+      next(err);
+    }
+  });
+
 module.exports = authRouter;
